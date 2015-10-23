@@ -32,7 +32,6 @@ public class PageRank {
 	
 	public static void createInitialRankVector(String directoryPath, long n) throws IOException 
 	{
-		System.out.println("Create Initial Rank Vector!");
 		File dir = new File(directoryPath);
 		if(! dir.exists())
 			FileUtils.forceMkdir(dir);
@@ -47,18 +46,13 @@ public class PageRank {
 	
 	public static boolean checkConvergence(String initialDirPath, String iterationDirPath, double epsilon) throws IOException
 	{
-		System.out.println("Check Convergence!");
 		BufferedReader ri = new BufferedReader(new FileReader(initialDirPath + "/part-r-00000"));
 		BufferedReader rii = new BufferedReader(new FileReader(iterationDirPath + "/part-r-00000"));
 		String line_ri = ri.readLine();
 		String line_rii = rii.readLine();
-		System.out.println("Check Convergence: " +line_ri + " " + line_rii);
 		while(line_ri != null){
-//			line_ri = line_ri.replaceAll("\n", "");
-//			line_rii = line_rii.replaceAll("\n", "");
 			line_ri = line_ri.split("\\s+")[1];
 			line_rii = line_rii.split("\\s+")[1];
-			System.out.println("Check Convergence: " +line_ri + " " + line_rii);
 			if (Math.abs(Double.parseDouble(line_rii) - Double.parseDouble(line_ri)) > epsilon){
 				ri.close();
 				rii.close();
@@ -74,17 +68,14 @@ public class PageRank {
 	
 	public static void avoidSpiderTraps(String vectorDirPath, long nNodes, double beta) throws IOException 
 	{
-		System.out.println("Avoid Spider Traps!");
 		BufferedReader ri = new BufferedReader(new FileReader(vectorDirPath + "/part-r-00000"));
 		
 		String line_ri = ri.readLine();
 		String final_result = "";
 		while(line_ri != null){
-//			line_ri = line_ri.replaceAll("\n", "");
-			String[] list = line_ri.split("\\s+");
-			final_result = final_result.concat(list[0] + " ");
-			final_result = final_result.concat(Double.toString((Double.parseDouble(list[1])*beta + (1.0/nNodes)*(1.0 -beta))));
-			System.out.println("Spider Trap Iteration: " + list[0] + " " + Double.toString((Double.parseDouble(list[1])*beta + (1.0/nNodes)*(1.0 -beta))));
+			String[] line_list = line_ri.split("\\s+");
+			final_result = final_result.concat(line_list[0] + " ");
+			final_result = final_result.concat(Double.toString((Double.parseDouble(line_list[1])*beta + (1.0/nNodes)*(1.0 -beta))));
 			line_ri = ri.readLine();
 			if (line_ri != null)
 				final_result = final_result.concat("\n");
@@ -92,22 +83,16 @@ public class PageRank {
 		}
 		ri.close();
 		FileUtils.deleteDirectory(new File(vectorDirPath));
+		
 		FileUtils.forceMkdir(new File(vectorDirPath));		
 		BufferedWriter output = new BufferedWriter(new FileWriter(vectorDirPath + "/part-r-00000"));
 		output.write(final_result);
 		output.close();
-		
-		System.out.println("Spider Trap: " + final_result);
-//		BufferedWriter rii = new BufferedWriter(new FileWriter(vectorDirPath + "/part-r-00001"));
-//		rii.write(final_result);
-//		rii.close();
-//		Files.move( new File(vectorDirPath + "/part-r-00001"),  new File(vectorDirPath + "/part-r-00000"));
 	}
 	
 	public static void iterativePageRank(Configuration conf) 
 			throws IOException, InterruptedException, ClassNotFoundException
 	{
-		System.out.println("Iterative Page Rank!");
 		String initialVector = conf.get("initialVectorPath");
 		String currentVector = conf.get("currentVectorPath");
 		
@@ -125,7 +110,6 @@ public class PageRank {
 		avoidSpiderTraps(currentVector, conf.getLong("numNodes", 0), beta);
 		
 		while (!checkConvergence(initialVector, currentVector, epsilon)){
-			System.out.println("Iterative Page Rank: Inside While!");
 			FileUtils.deleteDirectory(new File(initialVector));
 			FileUtils.copyDirectory(new File(currentVector), new File(initialVector));
 			FileUtils.deleteDirectory(new File(currentVector));
@@ -133,9 +117,7 @@ public class PageRank {
 			avoidSpiderTraps(currentVector, conf.getLong("numNodes", 0), beta);
 		}
 		
-		System.out.println("Iterative Page Rank: After while!");
 		FileUtils.copyDirectory(new File(currentVector), new File(finalVector));
-		
 
 		// when you finished implementing delete this line
 //		throw new UnsupportedOperationException("Implementation missing");

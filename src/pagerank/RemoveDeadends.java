@@ -42,8 +42,6 @@ public class RemoveDeadends {
 			String[] values = value.toString().split("\\s+");
 			context.write(new Text(values[0]), new Text("1 " + values[1]));
 			context.write(new Text(values[1]), new Text("0 " + values[0]));			
-//			System.out.println("RemoveDeadEndsMAP: " + values[0] + " 1 " + values[1]);
-//			System.out.println("RemoveDeadEndsMAP: " + values[1] + " 0 " + values[0]);
 			}
 		}
 	
@@ -52,29 +50,23 @@ public class RemoveDeadends {
 		
 		protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException{
 			
-			List<String> link_list = new ArrayList<String>();
+			List<String> son_list = new ArrayList<String>();
 			int has_successor = 0;
 			for (Text val : values){
 				String[] link = val.toString().split("\\s+");
-//				System.out.println("RemoveDeadEndsREDUCE: "+ key.toString() + " " + link[0] + " " +link[1] + " " +(link[0].compareTo("1") == 0));
 				if (link[0].compareTo("1") == 0)
 					has_successor = 1;
 				else
-					link_list.add(link[1]);
+					son_list.add(link[1]);
 			}
-//			System.out.println("\n");
 			if (has_successor == 1){
-			for (String link : link_list){
-					context.write(new Text(link), key);
-//					System.out.println("RemoveDeadEndsREDUCE: "+ link + " " + key.toString());
+			for (String son : son_list){
+					context.write(new Text(son), key);
 				}
-			}
-//			System.out.println("\n");
-			if (has_successor == 1){
-				context.getCounter(myCounters.NUMNODES).increment(1);
+			context.getCounter(myCounters.NUMNODES).increment(1);
 			}
 		}		
-}
+	}
 
 	public static void job(Configuration conf) throws IOException, ClassNotFoundException, InterruptedException{
 		
@@ -115,8 +107,6 @@ public class RemoveDeadends {
 			FileOutputFormat.setOutputPath(job, new Path(intermediaryDir));
 
 			job.waitForCompletion(true);
-			
-			System.out.println("RemoveDeadEndsREDUCE: END OF ONE REDUCE - " + job.getCounters().findCounter(myCounters.NUMNODES).getValue());
 
 			if(nNodes == job.getCounters().findCounter(myCounters.NUMNODES).getValue()){
 				existDeadends = false;
@@ -129,14 +119,7 @@ public class RemoveDeadends {
 			FileUtils.deleteDirectory(new File(currentInput));
 			FileUtils.copyDirectory(new File(intermediaryDir), new File(currentInput));
 			FileUtils.deleteDirectory(new File(intermediaryDir));
-		}
-//		nNodes = RemoveDeadends.myCounters.NUMNODES.ordinal();
-		System.out.println("DEAD ENDS FINAL COUNT: " + nNodes);
-//		conf.setLong("numNodes", nNodes);
-		// when you finished implementing delete this line
-//		throw new UnsupportedOperationException("Implementation missing");
-		
-		
+		}		
 	}
 	
 }
